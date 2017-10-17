@@ -1,12 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
-	"fmt"
 	"github.com/whosonfirst/go-whosonfirst-chatterbox"
-	"gopkg.in/redis.v1"
+	"github.com/whosonfirst/go-whosonfirst-chatterbox/broadcaster"
 	"log"
+	"os"
+	"path/filepath"
 )
 
 func main() {
@@ -24,6 +24,44 @@ func main() {
 
 	flag.Parse()
 
+	if *destination == "" {
+		log.Fatal("missing destination")
+	}
+
+	if *host == "" {
+
+		hostname, err := os.Hostname()
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		*host = hostname
+	}
+
+	if *application == "" {
+
+		abs_path, err := filepath.Abs(os.Args[0])
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		*application = filepath.Base(abs_path)
+	}
+
+	if *context == "" {
+		*context = "chatterbox"
+	}
+
+	if *status == "" {
+		*status = "ok"
+	}
+
+	if *status_code == 0 {
+		*status_code = 1
+	}
+
 	m := chatterbox.ChatterboxMessage{
 		Destination: *destination,
 		Host:        *host,
@@ -33,25 +71,24 @@ func main() {
 		StatusCode:  *status_code,
 	}
 
-	msg, err := json.Marshal(m)
+	opts := broadcaster.NewDefaultPubSubBroadcasterOptions()
+	opts.Host = *redis_host
+	opts.Port = *redis_port
+	opts.Channel = *redis_channel
+
+	br, err := broadcaster.NewPubSubBroadcaster(opts)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	redis_endpoint := fmt.Sprintf("%s:%d", *redis_host, *redis_port)
+	defer br.Close()
 
-	redis_client := redis.NewTCPClient(&redis.Options{
-		Addr: redis_endpoint,
-	})
-
-	defer redis_client.Close()
-
-	_, err = redis_client.Ping().Result()
+	err = br.Broadcast(m)
 
 	if err != nil {
-		log.Fatal("Failed to ping Redis server ", err)
+		log.Fatal(err)
 	}
 
-	redis_client.Publish(*redis_channel, string(msg))
+	os.Exit(0)
 }

@@ -8,17 +8,17 @@ type ChatterboxMessage struct {
 	Application string      `json:"application"`
 	Context     string      `json:"context"`
 	Status      string      `json:"status"`
-	StatusCode  int         `json:"status"`
+	StatusCode  int         `json:"status_code"`
 	Details     interface{} `json:"body"`
 }
 
 type CloudWatchMessage struct {
-	Host        string      `json:"host"`
-	Application string      `json:"application"`
-	Context     string      `json:"context"`
-	Status      string      `json:"status"`
-	StatusCode  int         `json:"status"`
-	Details     interface{} `json:"details"`
+	Host        string      `json:"host,omitempty"`
+	Application string      `json:"application,omitempty"`
+	Context     string      `json:"context,omitempty"`
+	Status      string      `json:"status,omitempty"`
+	StatusCode  int         `json:"status_code,omitempty"`
+	Details     interface{} `json:"details,omitempty"`
 }
 
 type Receiver interface {
@@ -28,4 +28,9 @@ type Receiver interface {
 
 type Dispatcher interface {
 	Dispatch(ChatterboxMessage) error
+}
+
+type Broadcaster interface {
+	Broadcast(ChatterboxMessage) error
+	Close() error
 }

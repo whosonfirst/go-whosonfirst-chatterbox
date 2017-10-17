@@ -8,8 +8,10 @@ prep:
 
 self:   prep
 	if test -d src; then rm -rf src; fi
+	mkdir -p src/github.com/whosonfirst/go-whosonfirst-chatterbox/broadcaster
 	mkdir -p src/github.com/whosonfirst/go-whosonfirst-chatterbox/dispatcher
 	mkdir -p src/github.com/whosonfirst/go-whosonfirst-chatterbox/receiver
+	cp broadcaster/*.go src/github.com/whosonfirst/go-whosonfirst-chatterbox/broadcaster/
 	cp dispatcher/*.go src/github.com/whosonfirst/go-whosonfirst-chatterbox/dispatcher/
 	cp receiver/*.go src/github.com/whosonfirst/go-whosonfirst-chatterbox/receiver/
 	cp *.go src/github.com/whosonfirst/go-whosonfirst-chatterbox
@@ -32,6 +34,7 @@ vendor-deps: deps
 
 fmt:
 	go fmt cmd/*.go
+	go fmt broadcaster/*.go
 	go fmt dispatcher/*.go
 	go fmt receiver/*.go
 	go fmt *.go
