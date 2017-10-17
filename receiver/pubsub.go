@@ -73,7 +73,7 @@ func (r *PubSubReceiver) Listen(dispatchers ...chatterbox.Dispatcher) error {
 		if msg, _ := i.(*redis.Message); msg != nil {
 
 			payload := msg.Payload
-			log.Println("PAYLOAD", payload)
+			// log.Println("PAYLOAD", payload)
 
 			var m chatterbox.ChatterboxMessage
 			err := json.Unmarshal([]byte(payload), &m)

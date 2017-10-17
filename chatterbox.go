@@ -9,7 +9,7 @@ type ChatterboxMessage struct {
 	Context     string      `json:"context"`
 	Status      string      `json:"status"`
 	StatusCode  int         `json:"status_code"`
-	Details     interface{} `json:"body"`
+	Details     interface{} `json:"details"`
 	Signature   string      `json:"signature,omitempty"`
 }
 
