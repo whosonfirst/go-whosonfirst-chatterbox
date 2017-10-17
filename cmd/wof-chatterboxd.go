@@ -14,30 +14,34 @@ func main() {
 	var redis_host = flag.String("redis-host", "localhost", "The Redis host to connect to.")
 	var redis_port = flag.Int("redis-port", 6379, "The Redis port to connect to.")
 	var redis_channel = flag.String("redis-channel", "chatterbox", "The Redis channel to publish to.")
+	var pubsub_daemon = flag.Bool("pubsubd", false, "")
 
 	flag.Parse()
 
-	server, err := pubsubd.NewServer(*redis_host, *redis_port)
+	if *pubsub_daemon {
 
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ready := make(chan bool)
-
-	go func() {
-
-		err := server.ListenAndServeWithReadySignal(ready)
+		server, err := pubsubd.NewServer(*redis_host, *redis_port)
 
 		if err != nil {
 			log.Fatal(err)
 		}
-	}()
 
-	sig := <-ready
+		ready := make(chan bool)
 
-	if !sig {
-		log.Fatal("Received negative ready signal from PubSub server")
+		go func() {
+
+			err := server.ListenAndServeWithReadySignal(ready)
+
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+
+		sig := <-ready
+
+		if !sig {
+			log.Fatal("Received negative ready signal from PubSub server")
+		}
 	}
 
 	opts := receiver.NewDefaultPubSubReceiverOptions()
