@@ -31,6 +31,10 @@ func NewCloudWatchDispatcher() (chatterbox.Dispatcher, error) {
 	return &d, nil
 }
 
+func (d *CloudWatchDispatcher) Close() error {
+	return nil
+}
+
 func (d *CloudWatchDispatcher) Dispatch(m chatterbox.ChatterboxMessage) error {
 
 	// please for to be error checking...
@@ -74,13 +78,7 @@ func (d *CloudWatchDispatcher) Dispatch(m chatterbox.ChatterboxMessage) error {
 		return err
 	}
 
-	/*
-		err = wr.Flush()
-
-		if err != nil {
-			return err
-		}
-	*/
+	// cloudwatch library does a whole flush-on-a-timer thing
 
 	return nil
 }

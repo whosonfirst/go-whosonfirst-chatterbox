@@ -10,7 +10,7 @@ type ChatterboxMessage struct {
 	Status      string      `json:"status"`
 	StatusCode  int         `json:"status_code"`
 	Details     interface{} `json:"body"`
-	Signature   string	`json:"signature,omitempty"`
+	Signature   string      `json:"signature,omitempty"`
 }
 
 type CloudWatchMessage struct {
@@ -29,6 +29,7 @@ type Receiver interface {
 
 type Dispatcher interface {
 	Dispatch(ChatterboxMessage) error
+	Close() error
 }
 
 type Broadcaster interface {
