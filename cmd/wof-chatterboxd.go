@@ -35,7 +35,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err =	r.Listen(d)
+	err = r.Listen(d)
 
 	if err != nil {
 		log.Fatal(err)

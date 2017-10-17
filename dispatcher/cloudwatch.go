@@ -33,7 +33,7 @@ func NewCloudWatchDispatcher() (chatterbox.Dispatcher, error) {
 
 func (d *CloudWatchDispatcher) Dispatch(m chatterbox.ChatterboxMessage) error {
 
-     	// please for to be error checking...
+	// please for to be error checking...
 
 	dest := strings.Split(m.Destination, "#")
 	group := dest[0]
@@ -72,11 +72,11 @@ func (d *CloudWatchDispatcher) Dispatch(m chatterbox.ChatterboxMessage) error {
 	}
 
 	/*
-	err = wr.Flush()
+		err = wr.Flush()
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return err
+		}
 	*/
 
 	return nil
