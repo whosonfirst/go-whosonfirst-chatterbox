@@ -42,7 +42,7 @@ func NewPubSubReceiver(opts PubSubReceiverOptions) (chatterbox.Receiver, error) 
 	_, err := redis_client.Ping().Result()
 
 	if err != nil {
-		log.Fatal("Failed to ping Redis server ", err)
+		return nil, err
 	}
 
 	r := PubSubReceiver{
@@ -71,8 +71,6 @@ func (r *PubSubReceiver) Listen(dispatchers ...chatterbox.Dispatcher) error {
 		i, _ := pubsub_client.Receive()
 
 		if msg, _ := i.(*redis.Message); msg != nil {
-
-			log.Println(msg.Payload)
 
 			var m chatterbox.ChatterboxMessage
 

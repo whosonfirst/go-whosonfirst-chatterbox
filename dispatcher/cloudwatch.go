@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	"github.com/eltorocorp/cloudwatch"
 	"github.com/whosonfirst/go-whosonfirst-chatterbox"
-	"log"
+	_ "log"
 	"strings"
 )
 
@@ -17,6 +17,9 @@ type CloudWatchDispatcher struct {
 }
 
 func NewCloudWatchDispatcher() (chatterbox.Dispatcher, error) {
+
+	// please make me config flags and options and
+	// all that good stuff (20171017/thisisaaronland)
 
 	cfg := aws.NewConfig()
 	cfg.WithRegion("us-east-1")
@@ -69,8 +72,6 @@ func (d *CloudWatchDispatcher) Dispatch(m chatterbox.ChatterboxMessage) error {
 	if err != nil {
 		return err
 	}
-
-	log.Println(dest, string(enc))
 
 	_, err = wr.Write(enc)
 

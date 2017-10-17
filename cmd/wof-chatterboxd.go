@@ -1,21 +1,13 @@
 package main
 
 import (
-	"context"
 	"flag"
 	pubsubd "github.com/whosonfirst/go-redis-tools/pubsub"
 	"github.com/whosonfirst/go-whosonfirst-chatterbox/dispatcher"
 	"github.com/whosonfirst/go-whosonfirst-chatterbox/receiver"
 	"log"
 	"os"
-	"time"
 )
-
-func start_pubsubd(ctx context.Context, cancel context.CancelFunc, host string, port int) {
-
-	log.Println("START")
-
-}
 
 func main() {
 
@@ -25,28 +17,28 @@ func main() {
 
 	flag.Parse()
 
-	_, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	server, err := pubsubd.NewServer(*redis_host, *redis_port)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	ready := make(chan bool)
+
 	go func() {
 
-		err := server.ListenAndServe()
+		err := server.ListenAndServeWithReadySignal(ready)
 
 		if err != nil {
 			log.Fatal(err)
 		}
 	}()
 
-	// wait for the redis server - please replace with
-	// something actually better than this...
+	sig := <-ready
 
-	time.Sleep(2 * time.Second)
+	if !sig {
+		log.Fatal("Received negative ready signal from PubSub server")
+	}
 
 	opts := receiver.NewDefaultPubSubReceiverOptions()
 	opts.Host = *redis_host
@@ -66,6 +58,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Printf("listening for chatterbox requests on the %s channel at %s:%d\n", *redis_channel, *redis_host, *redis_port)
 
 	err = r.Listen(d)
 
