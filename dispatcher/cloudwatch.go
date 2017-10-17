@@ -52,9 +52,12 @@ func (d *CloudWatchDispatcher) Dispatch(m chatterbox.ChatterboxMessage) error {
 	}
 
 	cw := chatterbox.CloudWatchMessage{
-		Source: m.Source,
-		Status: m.Status,
-		Body:   m.Body,
+		Host:        m.Host,
+		Application: m.Application,
+		Context:     m.Context,
+		Status:      m.Status,
+		StatusCode:  m.StatusCode,
+		Details:     m.Details,
 	}
 
 	enc, err := json.Marshal(cw)

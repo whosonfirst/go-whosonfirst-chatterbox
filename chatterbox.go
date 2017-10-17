@@ -4,15 +4,21 @@ import ()
 
 type ChatterboxMessage struct {
 	Destination string      `json:"destination"`
-	Source      string      `json:"source"`
-	Status      int         `json:"status"`
-	Body        interface{} `json:"body"`
+	Host        string      `json:"host"`
+	Application string      `json:"application"`
+	Context     string      `json:"context"`
+	Status      string      `json:"status"`
+	StatusCode  int         `json:"status"`
+	Details     interface{} `json:"body"`
 }
 
 type CloudWatchMessage struct {
-	Source string      `json:"source"`
-	Status int         `json:"status"`
-	Body   interface{} `json:"body"`
+	Host        string      `json:"host"`
+	Application string      `json:"application"`
+	Context     string      `json:"context"`
+	Status      string      `json:"status"`
+	StatusCode  int         `json:"status"`
+	Details     interface{} `json:"details"`
 }
 
 type Receiver interface {

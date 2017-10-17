@@ -22,6 +22,7 @@ rmdeps:
 deps:   rmdeps
 	@GOPATH=$(GOPATH) go get -u "github.com/eltorocorp/cloudwatch"
 	@GOPATH=$(GOPATH) go get -u "gopkg.in/redis.v1"
+	@GOPATH=$(GOPATH) go get -u "github.com/whosonfirst/go-redis-tools/pubsub"
 
 vendor-deps: deps
 	if test -d vendor; then rm -rf vendor; fi
@@ -36,4 +37,5 @@ fmt:
 	go fmt *.go
 
 bin:	self
+	@GOPATH=$(shell pwd) go build -o bin/wof-chatterbox cmd/wof-chatterbox.go
 	@GOPATH=$(shell pwd) go build -o bin/wof-chatterboxd cmd/wof-chatterboxd.go
