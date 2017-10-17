@@ -56,7 +56,18 @@ func (d *CloudWatchDispatcher) Dispatch(m chatterbox.ChatterboxMessage) error {
 	log.Println(dest, string(enc))
 
 	_, err = wr.Write(enc)
-	wr.Flush()
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	/*
+	err = wr.Flush()
+
+	if err != nil {
+		return err
+	}
+	*/
+
+	return nil
 }

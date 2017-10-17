@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"sync"
 	"time"
 
@@ -72,6 +73,7 @@ func (w *Writer) start() error {
 
 		<-w.throttle
 		if err := w.Flush(); err != nil {
+			log.Println(err)
 			return err
 		}
 	}
@@ -103,12 +105,33 @@ func (w *Writer) Flush() error {
 // flush flashes a slice of log events. This method should be called
 // sequentially to ensure that the sequence token is updated properly.
 func (w *Writer) flush(events []*cloudwatchlogs.InputLogEvent) error {
+
+	if w.sequenceToken == nil {
+
+		params := &cloudwatchlogs.DescribeLogStreamsInput{
+			LogGroupName:        w.group,
+			LogStreamNamePrefix: w.stream,
+			Descending:          aws.Bool(true),
+			Limit:               aws.Int64(1),
+		}
+
+		desc, err := w.client.DescribeLogStreams(params)
+
+		if err != nil {
+			return err
+		}
+
+		seq := desc.LogStreams[0].UploadSequenceToken
+		w.sequenceToken = seq
+	}
+
 	resp, err := w.client.PutLogEvents(&cloudwatchlogs.PutLogEventsInput{
 		LogEvents:     events,
 		LogGroupName:  w.group,
 		LogStreamName: w.stream,
 		SequenceToken: w.sequenceToken,
 	})
+
 	if err != nil {
 		return err
 	}
