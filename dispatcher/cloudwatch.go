@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
-	"github.com/ejholmes/cloudwatch"
+	"github.com/eltorocorp/cloudwatch"
 	"github.com/whosonfirst/go-whosonfirst-chatterbox"
 	"log"
 	"strings"
@@ -39,7 +39,17 @@ func (d *CloudWatchDispatcher) Dispatch(m chatterbox.ChatterboxMessage) error {
 	group := dest[0]
 	stream := dest[1]
 
-	wr := cloudwatch.NewWriter(group, stream, d.client)
+	gr, err := cloudwatch.AttachGroup(group, d.client)
+
+	if err != nil {
+		return err
+	}
+
+	wr, err := gr.AttachStream(stream)
+
+	if err != nil {
+		return err
+	}
 
 	cw := chatterbox.CloudWatchMessage{
 		Source: m.Source,

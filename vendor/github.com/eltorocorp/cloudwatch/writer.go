@@ -5,12 +5,12 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"sync"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
+	"github.com/aws/aws-sdk-go/service/cloudwatchlogs/cloudwatchlogsiface"
 )
 
 type RejectedLogEventsInfoError struct {
@@ -26,7 +26,7 @@ func (e *RejectedLogEventsInfoError) Error() string {
 type Writer struct {
 	group, stream, sequenceToken *string
 
-	client client
+	client cloudwatchlogsiface.CloudWatchLogsAPI
 
 	closed bool
 	err    error
@@ -38,7 +38,7 @@ type Writer struct {
 	sync.Mutex // This protects calls to flush.
 }
 
-func NewWriter(group, stream string, client *cloudwatchlogs.CloudWatchLogs) *Writer {
+func NewWriter(group, stream string, client cloudwatchlogsiface.CloudWatchLogsAPI) *Writer {
 	w := &Writer{
 		group:    aws.String(group),
 		stream:   aws.String(stream),
@@ -73,7 +73,6 @@ func (w *Writer) start() error {
 
 		<-w.throttle
 		if err := w.Flush(); err != nil {
-			log.Println(err)
 			return err
 		}
 	}
@@ -105,33 +104,12 @@ func (w *Writer) Flush() error {
 // flush flashes a slice of log events. This method should be called
 // sequentially to ensure that the sequence token is updated properly.
 func (w *Writer) flush(events []*cloudwatchlogs.InputLogEvent) error {
-
-	if w.sequenceToken == nil {
-
-		params := &cloudwatchlogs.DescribeLogStreamsInput{
-			LogGroupName:        w.group,
-			LogStreamNamePrefix: w.stream,
-			Descending:          aws.Bool(true),
-			Limit:               aws.Int64(1),
-		}
-
-		desc, err := w.client.DescribeLogStreams(params)
-
-		if err != nil {
-			return err
-		}
-
-		seq := desc.LogStreams[0].UploadSequenceToken
-		w.sequenceToken = seq
-	}
-
 	resp, err := w.client.PutLogEvents(&cloudwatchlogs.PutLogEventsInput{
 		LogEvents:     events,
 		LogGroupName:  w.group,
 		LogStreamName: w.stream,
-		SequenceToken: w.sequenceToken,
+		SequenceToken: w.getSequenceToken(),
 	})
-
 	if err != nil {
 		return err
 	}
@@ -144,6 +122,29 @@ func (w *Writer) flush(events []*cloudwatchlogs.InputLogEvent) error {
 	w.sequenceToken = resp.NextSequenceToken
 
 	return nil
+}
+
+// getSequenceToken retrieves the sequence token for the current stream.
+// If the sequence token is already set (non-nil), that value is returned.
+// If the sequence token is nil, the token is retrieved from the log stream.
+// If the stream returns an error (e.g. the stream doesnt exist), the token is left as nil
+// which is acceptable for new streams.
+func (w *Writer) getSequenceToken() (sequenceToken *string) {
+	if w.sequenceToken == nil {
+		describeLogStreamsOutput, err := w.client.DescribeLogStreams(&cloudwatchlogs.DescribeLogStreamsInput{
+			LogGroupName:        w.group,
+			LogStreamNamePrefix: w.stream,
+		})
+		if err == nil {
+			for _, stream := range describeLogStreamsOutput.LogStreams {
+				if *stream.LogStreamName == *w.stream {
+					sequenceToken = stream.UploadSequenceToken
+					break
+				}
+			}
+		}
+	}
+	return sequenceToken
 }
 
 // buffer splits up b into individual log events and inserts them into the

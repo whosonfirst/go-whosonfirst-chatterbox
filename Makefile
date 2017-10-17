@@ -20,7 +20,7 @@ rmdeps:
 	if test -d src; then rm -rf src; fi 
 
 deps:   rmdeps
-	@GOPATH=$(GOPATH) go get -u "github.com/ejholmes/cloudwatch"
+	@GOPATH=$(GOPATH) go get -u "github.com/eltorocorp/cloudwatch"
 	@GOPATH=$(GOPATH) go get -u "gopkg.in/redis.v1"
 
 vendor-deps: deps
