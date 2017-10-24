@@ -2,6 +2,7 @@ package dispatcher
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
@@ -43,6 +44,11 @@ func (d *CloudWatchDispatcher) Dispatch(m chatterbox.ChatterboxMessage) error {
 	// please for to be error checking...
 
 	dest := strings.Split(m.Destination, "#")
+
+	if len(dest) != 2 {
+		return errors.New("Invalid destination string")
+	}
+
 	group := dest[0]
 	stream := dest[1]
 
