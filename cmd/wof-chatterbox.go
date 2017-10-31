@@ -1,12 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"github.com/whosonfirst/go-whosonfirst-chatterbox"
 	"github.com/whosonfirst/go-whosonfirst-chatterbox/broadcaster"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -69,6 +71,28 @@ func main() {
 		Context:     *context,
 		Status:      *status,
 		StatusCode:  *status_code,
+	}
+
+	var details interface{}
+
+	args := flag.Args()
+
+	body := strings.Join(args, " ")
+	body = strings.Trim(body, " ")
+
+	if body != "" {
+
+		var stub interface{}
+
+		err := json.Unmarshal([]byte(body), &stub)
+
+		if err == nil {
+			details = stub
+		} else {
+			details = body
+		}
+
+		m.Details = details
 	}
 
 	opts := broadcaster.NewDefaultPubSubBroadcasterOptions()
